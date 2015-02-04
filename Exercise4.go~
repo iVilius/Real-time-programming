@@ -81,7 +81,6 @@ func main() {
 		fmt.Println("\nMessage contents: ", i.Word)
 		fmt.Println("\nLocal IP was: ", i.LocalIP)
 		fmt.Println("\nRemote IP was: ", i.RemoteIP)
-		fmt.Println("\nRaw contents: ", i.RawWord)
 		fmt.Println("__________________________\n")
 		time.Sleep(1000*time.Millisecond)
 	}
