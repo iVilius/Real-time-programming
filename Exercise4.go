@@ -32,7 +32,7 @@ func UDP_receive(port string, receiveCh chan Message)(err error) {
 		buffer := make([]byte, 2048)
 		n,addr,err := localListenConn.ReadFromUDP(buffer[0:])
 		if err != nil {fmt.Println(err); return err}
-		fmt.Println(string(buffer))
+		//fmt.Println(string(buffer))
 		err = json.Unmarshal(buffer[:n], &receiveMessage)
 		receiveMessage.LocalIP = addr.String()
 		receiveMessage.CurrTime = time.Now()
@@ -66,15 +66,15 @@ func UDP_broadcast(baddr string, sendCh chan string) (error){
 
 func main() {
 	receiveChannel := make(chan Message, 1024)
-	//sendChannel := make(chan string, 1024)
+	sendChannel := make(chan string, 1024)
 	//message := Message{}
-	//go UDP_broadcast("129.241.187.255:24568", sendChannel)
-	go UDP_receive("20020", receiveChannel)
+	go UDP_broadcast("129.241.187.255:24568", sendChannel)
+	go UDP_receive("24568", receiveChannel)
 	
 	time.Sleep(100*time.Millisecond)
 
 	for {
-		//sendChannel <-"NOt generic"
+		sendChannel <-"NOt generic"
 		i := <- receiveChannel
 		fmt.Println("\n\nMessage received on: ", i.CurrTime)
 		fmt.Println("\nMessage ID was: ", i.ID)
@@ -83,7 +83,7 @@ func main() {
 		fmt.Println("\nRemote IP was: ", i.RemoteIP)
 		fmt.Println("\nRaw contents: ", i.RawWord)
 		fmt.Println("__________________________\n")
-		time.Sleep(1000*time.Millisecond)
+		time.Sleep(100*time.Millisecond)
 	}
 }
 
