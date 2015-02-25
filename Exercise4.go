@@ -68,10 +68,10 @@ func main() {
 	receiveChannel := make(chan Message, 1024)
 	sendChannel := make(chan string, 1024)
 	//message := Message{}
-	go UDP_broadcast("129.241.187.255:24568", sendChannel)
-	go UDP_receive("24568", receiveChannel)
+	go UDP_broadcast("129.241.187.255:30000", sendChannel)
+	go UDP_receive("30000", receiveChannel)
 	
-	time.Sleep(100*time.Millisecond)
+	time.Sleep(500*time.Millisecond)
 
 	for {
 		sendChannel <-"NOt generic"
