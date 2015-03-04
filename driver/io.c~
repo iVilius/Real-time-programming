@@ -13,8 +13,6 @@
 
 static comedi_t *it_g = NULL;
 
-
-
 int io_init() {
     int i = 0;
     int status = 0;

@@ -6,6 +6,13 @@ package driver  // where "driver" is the folder that contains io.go, io.c, io.h,
 import "C"
 import "fmt"
 
+
+const (
+	NO_DIRECTION := 0
+	UP := 1
+	DOWN := -1		
+)
+
 func elev_init() {
 	
 	if (!io_init()) {
@@ -20,48 +27,51 @@ func elev_init() {
 }
 
 func elev_set_direction(dir int) { // spør studass om navning, trenger vi speed?
-									// husk å definere 0, 1, -1 som enum
-	if (dir == 0) {
+
+	if (dir == NO_DIRECTION) {
 		io_write_analog(MOTOR, 0)
 		return 0
 		}
-	else if (dir == 1) {
+	else if (dir == UP) {
 		io_clear_bit(MOTORDIR)
 		io_write_analog(MOTOR, 2800)
 		return 0
 		}
-	else if (dir == -1) {
+	else if (dir == DOWN) {
 		io_set_bit(MOTORDIR)
 		io_write_analog(MOTOR, 2800)
 		return 0
 		}
 	else {
-		fmt.Println("The give direction is invalid\n")
-		return 1} // error
+		fmt.Println("The given direction is invalid\n")
+		return 1
+		} // error
 }
 
 func elev_get_direction() {
 
 	return io_read_bit(MOTORDIR)
 }
-
+// TO DO
 func elev_set_destination_floor(floor int) {
 	
 	if (elev_get_latest_floor() == floor) { //dependencies?!?
-		elev_set_direction(0)
+		elev_set_direction(NO_DIRECTION)
 		return 0
 		}
 	
 	if (floor < elev_get_latest_floor()) {
-		elev_set_direction(-1)
+		elev_set_direction(DOWN)
 		// vente på signal
 		
 	}
 	else if (floor > elev_get_latest_floor()) {
-		elev_set_direction(1)
+		elev_set_direction(UP)
 		// vente på signal
 	
-	else {return 1} //error
+	else {fmt.Println("Destination floor is invalid\n")
+		return 1
+		} //error
 }
 
 func elev_get_latest_floor() {
@@ -76,6 +86,48 @@ func elev_get_latest_floor() {
 		return 3
 	else
 		return -1 // error
+}
+
+func elev_set_door_light(int value) {
+
+	if (value)
+		io_set_bit(LIGHT_DOOR_OPEN)
+	else 
+		io_clear_bit(LIGHT_DOOR_OPEN)
+}
+
+func elev_get_obstruction() {
+
+	io_get_bit(OBSTRUCTION)
+}
+
+func elev_set_stop_light(int value) {
+
+	if (value)
+		io_set_bit(LIGHT_STOP)
+	else
+		io_clear_bit(LIGHT_STOP)
+}
+
+func elev_get_stop() {
+
+	io_read_bit(STOP)
+}
+
+func elev_set_UPDOWN_light(int button, int value) {
+
+	if (value)
+		io_set_bit(button)
+	else
+		io_clear_bit()
+}
+
+func elev_set_order_light(int button, int value) {
+
+	if (value)
+		io_set_bit(button)
+	else
+		io_clear_bit(button)
 }
 
 func elev_threads() {
