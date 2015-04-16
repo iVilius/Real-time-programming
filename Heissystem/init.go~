@@ -10,9 +10,9 @@ var port string = "26816"
 
 func main() {
 
-	driver.network_init(n_elevators, port)
+	driver.Network_init(n_elevators, port)
 	
-	//elev_init()
+	driver.Elev_init()
 	
 }
 

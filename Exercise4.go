@@ -32,7 +32,6 @@ func UDP_receive(port string, receiveCh chan Message)(err error) {
 		buffer := make([]byte, 2048)
 		n,addr,err := localListenConn.ReadFromUDP(buffer[0:])
 		if err != nil {fmt.Println(err); return err}
-		//fmt.Println(string(buffer))
 		err = json.Unmarshal(buffer[:n], &receiveMessage)
 		receiveMessage.LocalIP = addr.String()
 		receiveMessage.CurrTime = time.Now()
@@ -58,6 +57,8 @@ func UDP_broadcast(baddr string, sendCh chan string) (error){
 	buffer, err := json.Marshal(msg)
 	if err != nil {return err}
 	
+	fmt.Println(string(buffer))
+	
 	for{
 		tempConn.Write([]byte(buffer))
 		time.Sleep(100*time.Millisecond)
@@ -67,7 +68,7 @@ func UDP_broadcast(baddr string, sendCh chan string) (error){
 func main() {
 	receiveChannel := make(chan Message, 1024)
 	sendChannel := make(chan string, 1024)
-	//message := Message{}
+
 	go UDP_broadcast("129.241.187.255:30000", sendChannel)
 	go UDP_receive("30000", receiveChannel)
 	
