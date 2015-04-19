@@ -1,30 +1,43 @@
 package driver
 
-import (//"fmt"
+import ("fmt"
 		"time")
 
-func Slave_run(n_elevators int, port string) {
+func Slave_run(n_elevators int, m_floors int, port string, row int) {
 
-	Slave_i_am_alive(n_elevators, port)
-
+	time.Sleep(2000*time.Millisecond)
+	fmt.Print("I am slave\n")
+	Slave_i_am_alive(n_elevators, m_floors, port, row)
+	
 }
 
-func Slave_i_am_alive(n_elevators int, port string) {
+func Slave_i_am_alive(n_elevators int, m_floors int, port string, row_in_state_matrix int) {
 	
 	var msg Message
-	msg.ID 			= 1 // for <I am alive>
-	msg.FLO 		= Elev_get_latest_floor()
-	msg.DIR 		= Elev_get_direction()
+	msg.ID 					= 1 // for <I am alive>
+	msg.Latest_floor 		= Elev_get_latest_floor()
+	msg.Direction 			= Elev_get_direction()
 	
-	quit 			:= make(chan int, 10)
+	terminate_ch			:= make(chan int, 1)
+	door_ch					:= make(chan int, 1)
+	order_ch 				:= make(chan [][]int, 5)
+	IP_ch					:= make(chan string, 1)
+	//stop_ch				:= make(chan bool, 1)
 	
-	time.Sleep(2000*time.Millisecond)
+	order_ch <- Orders_make_state_matrix(n_elevators, m_floors)
 	
-	go UDP_broadcast("129.241.187.255:" + port, msg, quit)
 	
-	go Orders_make_matrix(n_elevators)
+	go UDP_broadcast("129.241.187.255:" + port, msg, terminate_ch, IP_ch)
 	
-	go Lamps_run(door_ch, order_ch)
+	go Lamps_on(m_floors, row_in_state_matrix, door_ch, order_ch, terminate_ch)
+	
+	for {
+		time.Sleep(1000*time.Millisecond)
+	}
+	//go Buttons_check(door_ch, order_ch)
+	
+	
+	
 	//error check
 	/*
 	slave_channel 	:= make(chan Message, 100)

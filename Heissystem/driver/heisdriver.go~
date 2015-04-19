@@ -9,31 +9,34 @@ const (
 	DOWN 		 = 2		
 )
 
-func Elev_init() int {
+func Elev_init(N int, M int) int {
+	
+	
+	/*
+	DO THIS IF TIME LEFT
+	
+	door_ch 		:= make(chan int, 1)
+	order_ch 		:= make(chan [][]int, 5)
+	terminate_ch 	:= make(chan int, 1)
+	go Lamps_on(door_ch, order_ch, terminate_ch) // Lamps_reset
+	*/
 	
 	if (!IO_init()) {
 		fmt.Println("The hardware failed to initialize\n")
 		return 1 // error
 	}
 	
-	//Elev_reset_lamps() // DEFINE!
-	//Elev_reset_orders()
-	Elev_set_destination_floor(4)
+	Orders_make_state_matrix(N, M)
+	Elev_set_destination_floor(1)
 	fmt.Println("\n________________________________________________________________________________")
 	fmt.Println("Initialization successful\n")	
 	return 0 // success
 }
 
-func Elev_reset_lamps() {
-	
-
-
-}
-
 func Elev_idle() {
-
-
-
+	
+	
+	
 }
 
 func Elev_set_direction(dir int) int { // spør studass om navning, trenger vi speed?
