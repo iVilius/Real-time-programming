@@ -3,10 +3,11 @@
 package main
 
 import ("./driver"
+		//"fmt"
 		)
 
-var n_elevators int = 1
-var port string = "26816"
+const n_elevators = 1
+var port string 	= "26816"
 
 func main() {
 
@@ -14,6 +15,12 @@ func main() {
 	
 	driver.Elev_init()
 	
+	
+	
+	driver.Slave_run(n_elevators, port)
+	/*
+	driver.Elev_master()
+	*/
 }
 
 

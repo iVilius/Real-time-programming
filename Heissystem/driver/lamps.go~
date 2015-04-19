@@ -1,0 +1,18 @@
+package driver
+
+
+const (
+	
+
+)
+
+func Lamps_run(door_ch, order_ch) {
+	
+	if IO_read_analog(STOP) == 1 {
+		IO_write_analog(LIGHT_STOP, 1)
+	} else {
+		IO_write_analog(LIGHT_STOP, 0)
+	}
+	
+
+}

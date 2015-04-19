@@ -6,7 +6,7 @@ import "fmt"
 const (
 	NO_DIRECTION = 0
 	UP 			 = 1
-	DOWN 		 = -1		
+	DOWN 		 = 2		
 )
 
 func Elev_init() int {
@@ -16,10 +16,24 @@ func Elev_init() int {
 		return 1 // error
 	}
 	
-	//elev_reset_lamps() // DEFINE!
-	//elev_reset_orders()
-	Elev_set_destination_floor(3)
+	//Elev_reset_lamps() // DEFINE!
+	//Elev_reset_orders()
+	Elev_set_destination_floor(4)
+	fmt.Println("\n________________________________________________________________________________")
+	fmt.Println("Initialization successful\n")	
 	return 0 // success
+}
+
+func Elev_reset_lamps() {
+	
+
+
+}
+
+func Elev_idle() {
+
+
+
 }
 
 func Elev_set_direction(dir int) int { // spør studass om navning, trenger vi speed?
@@ -35,18 +49,26 @@ func Elev_set_direction(dir int) int { // spør studass om navning, trenger vi s
 		IO_set_bit(MOTORDIR)
 		IO_write_analog(MOTOR, 2800)
 		return 0
-	} else {
-		fmt.Println("The given direction is invalid\n")
-		return 1
-	} // error
+	}
+	
+	fmt.Println("The given direction is invalid\n")
+	return -1
 }
 
 func Elev_get_direction() int {
-
-	return (IO_read_bit(MOTORDIR))
+	
+	if IO_read_bit(MOTOR) == 0 {
+		return 0
+	} else if IO_read_bit(MOTORDIR) == 1 {
+		return 2
+	} else if IO_read_bit(MOTORDIR) == 0 {
+		return 1
+	} else {
+		fmt.Println("The direction is invalid\n")
+	}
+	return -1
 }
 
-// TO DO
 func Elev_set_destination_floor(floor int) int {
 	
 	if (Elev_get_latest_floor() == floor) { //dependencies?!?
