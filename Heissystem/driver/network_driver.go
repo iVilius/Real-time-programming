@@ -72,7 +72,7 @@ func UDP_broadcast(baddr string, msg Message, terminate_ch chan int) (int, error
 			if err != nil {fmt.Println(err); return -1, err}
 			tempConn.Write([]byte(buff))
 			time.Sleep(1000*time.Millisecond)
-			fmt.Println("BROADCASTING :)")
+			//fmt.Println("BROADCASTING :)")
 		}
 	}
 	
@@ -91,10 +91,12 @@ func Network_init(N int, port string)  ([]int, int){
 	go UDP_broadcast("129.241.187.255:" + port, msg, terminate_ch)
 	go UDP_receive(port, init_ch, terminate_ch)
 	
-	IP_list, Local_IP 			:= Network_capture_IP(N, init_ch)	
+	IP_list, Local_IP 			:= Network_capture_IP(N, init_ch)
+	
+	time.Sleep(3000*time.Millisecond)
 	terminate_ch 			<- 1
 	terminate_ch 			<- 1
-	time.Sleep(100*time.Millisecond)
+	
 	
 	Utilities_bubble_sort(IP_list)
 
@@ -116,7 +118,6 @@ func Network_capture_IP(N int, init_ch chan Message) ([]int, int){
 		Local_IP, _ 	:= strconv.Atoi(chan_value.Local_IP[start_index:end_index])
 		i 		:= 0
 		for j := 0; j < N; j++ {
-			fmt.Println(Local_IP)
 			if Local_IP == IP_list[j] {
 				i = 1
 			}

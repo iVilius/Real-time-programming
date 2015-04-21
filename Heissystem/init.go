@@ -6,7 +6,7 @@ import ("./driver"
 	"fmt")
 
 const n_elevators 	= 1
-const m_floors 		= 2
+const m_floors 		= 4
 var port string 	= "26816"
 
 func main() {

@@ -9,14 +9,14 @@ const (
 
 )
 
-func Lamps_on(M int, row int, door_ch chan int, order_ch chan [][]int, terminate_ch chan int) {
+func Lamps_check(M int, row int, door_ch chan int, lamp_ch chan [][]int, terminate_ch chan int) {
 	
 	for {
 		time.Sleep(50*time.Millisecond)
 		select {
 		case i := <- door_ch:
 			go Lamps_door(i)
-		case i := <- order_ch:
+		case i := <- lamp_ch:
 			go Lamps_order_buttons(i, M, row)
 		/*case i := <- stop_ch:
 			go Lamps_stop()*/
@@ -25,6 +25,8 @@ func Lamps_on(M int, row int, door_ch chan int, order_ch chan [][]int, terminate
 		default:
 			Lamps_stop_button()
 			Lamps_latest_floor()
+			
+			time.Sleep(50*time.Millisecond)
 		}
 	}
 }
@@ -58,7 +60,7 @@ func Lamps_latest_floor() {
 }
 
 func Lamps_order_buttons(array [][]int, m_floors int, row int) {
-
+	
 	if m_floors == 2 {
 		IO_write_analog(ORDER1, array[row][3])
 		IO_write_analog(ORDER2, array[row][4])

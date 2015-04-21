@@ -25,7 +25,17 @@ func Elev_init(N int, M int) int {
 		fmt.Println("The hardware failed to initialize\n")
 		return 1
 	}
-	Elev_set_destination_floor(1)
+	
+	Elev_set_direction(DOWN)
+	
+	for {
+		if Elev_get_latest_floor() == 1 {
+			Elev_set_direction(NO_DIRECTION)
+			break
+		}
+	}
+	
+	//Elev_set_destination_floor(1)
 	fmt.Println("\n________________________________________________________________________________")
 	fmt.Println("Initialization successful\n")	
 	return 0 
@@ -110,6 +120,8 @@ func Elev_get_latest_floor() int {
 	}
 }
 
+// SKAL TIL LAMPS
+
 func Elev_set_door_light(value int) {
 
 	if (value == 1) {
@@ -118,11 +130,13 @@ func Elev_set_door_light(value int) {
 		IO_clear_bit(LIGHT_DOOR_OPEN)
 	}
 }
+// SKAL TIL SENSORS
 
 func Elev_get_obstruction() {
 
 	IO_read_bit(OBSTRUCTION)
 }
+// SKAL TIL LAMPS
 
 func Elev_set_stop_light(value int) {
 
@@ -132,6 +146,7 @@ func Elev_set_stop_light(value int) {
 		IO_clear_bit(LIGHT_STOP)
 	}	
 }
+// SKAL TIL SENSORS
 
 func Elev_get_stop() {
 
