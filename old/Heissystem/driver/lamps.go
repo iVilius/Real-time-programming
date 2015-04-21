@@ -1,8 +1,8 @@
 package driver
 
 import ("fmt"
-	"time"
-	)
+		"time"
+		)
 
 const (
 	
@@ -58,35 +58,18 @@ func Lamps_latest_floor() {
 }
 
 func Lamps_order_buttons(array [][]int, m_floors int, row int) {
-
-	if m_floors == 2 {
-		IO_write_analog(ORDER1, array[row][3])
-		IO_write_analog(ORDER2, array[row][4])
-		IO_write_analog(UP1, 	array[row][5])
-		IO_write_analog(DOWN2, 	array[row][6])
-	} else if m_floors == 3 {
-		IO_write_analog(ORDER1, array[row][3])
-		IO_write_analog(ORDER2, array[row][4])
-		IO_write_analog(ORDER3, array[row][5])	
-		IO_write_analog(UP1, 	array[row][6])
-		IO_write_analog(UP2, 	array[row][7])
-		IO_write_analog(DOWN2, 	array[row][8])
-		IO_write_analog(DOWN3, 	array[row][9])
-	} else if m_floors == 4 {
-		IO_write_analog(ORDER1, array[row][3])
-		IO_write_analog(ORDER2, array[row][4])
-		IO_write_analog(ORDER3, array[row][5])
-		IO_write_analog(ORDER4, array[row][6])
-		IO_write_analog(UP1, 	array[row][7])
-		IO_write_analog(UP2, 	array[row][8])
-		IO_write_analog(UP3, 	array[row][9])
-		IO_write_analog(DOWN2, 	array[row][10])
-		IO_write_analog(DOWN3,	array[row][11])
-		IO_write_analog(DOWN4, 	array[row][12])
-	} else {
-		fmt.Println("Lamps: the system is not suited for", m_floors, "floors")
-		return
-	}
+	
+	IO_write_analog(ORDER1, array[row][3])
+	IO_write_analog(ORDER2, array[row][4])
+	IO_write_analog(ORDER3, array[row][5])
+	IO_write_analog(ORDER4, array[row][6])
+	IO_write_analog(UP1, 	array[row][7])
+	IO_write_analog(UP2, 	array[row][8])
+	IO_write_analog(UP3, 	array[row][9])
+	IO_write_analog(DOWN2, array[row][10])
+	IO_write_analog(DOWN3, array[row][11])
+	IO_write_analog(DOWN4, array[row][12])
+	fmt.Println(array[0])
 }
 
 

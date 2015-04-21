@@ -15,15 +15,13 @@ func Utilities_bubble_sort(array []int) {
 	}
 }
 
-func Utilities_find_column_in_state_matrix(value int, array []int) (int) {
+func Utilities_find_collumn_in_state_matrix(value int, array []int) (int) {
 	
-	fmt.Println(value)
-	fmt.Println(array)
 	for i := 0; i < len(array); i ++ {
 		if value == array[i] {
 			return i
 		}	
 	}
-	fmt.Println("Utilities: no column to use in state matrix")
+	fmt.Println("Couldn't find the right collumn")
 	return -1
 }

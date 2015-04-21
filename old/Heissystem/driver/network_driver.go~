@@ -13,7 +13,7 @@ import (
 
 type Message struct {
 
-    ID 			int // 0 for init, 1 for <I am alive>, 9000 for error, 666 to escape current go routine
+    ID 				int // 0 for init, 1 for <I am alive>, 9000 for error, 666 to escape current go routine
     Latest_floor 	int // 1 for first, 2 for second and so on
     Direction 		int	// 0 for NO_DIRECTION, 1 for UP and 2 for DOWN
     Current_time 	time.Time
@@ -29,7 +29,7 @@ func UDP_receive(port string, receive_ch chan Message, terminate_ch chan int)(in
 	baddr, err 			:= net.ResolveUDPAddr("udp",":"+port)
 	if err != nil {fmt.Println(err); return -1, err}
 
-	localListenConn, err 		:= net.ListenUDP("udp", baddr)
+	localListenConn, err := net.ListenUDP("udp", baddr)
 	if err != nil {fmt.Println(err); return -1, err}
 	
 	for {
@@ -48,18 +48,19 @@ func UDP_receive(port string, receive_ch chan Message, terminate_ch chan int)(in
 			if err != nil {fmt.Println(err); return -1, err}
 			receive_ch <- receive_message
 			time.Sleep(500*time.Millisecond)
-			
 		}
 	}
 }
 
-func UDP_broadcast(baddr string, msg Message, terminate_ch chan int) (int, error){
+func UDP_broadcast(baddr string, msg Message, terminate_ch chan int, IP_ch chan string) (int, error){
 
 	tempConn, err 		:= net.Dial("udp", baddr)
 	if err != nil {fmt.Println(err); return -1, err}
 	
 	msg.Local_IP 		= tempConn.LocalAddr().String()
 	msg.Remote_IP 		= baddr
+	
+	IP_ch <- msg.Local_IP
 	
 	for {
 		select {
@@ -83,40 +84,38 @@ func Network_init(N int, port string)  ([]int, int){
 
 	var msg Message
 	init_ch 			:= make(chan Message, 1024)
-	terminate_ch			:= make(chan int, 10)
-	//IP_ch				:= make(chan string, 100)
+	terminate_ch		:= make(chan int, 10)
+	IP_ch				:= make(chan string, 100)
 	
-	msg.ID 				= 0
+	msg.ID 				= 0													// init ID = 0
 	
-	go UDP_broadcast("129.241.187.255:" + port, msg, terminate_ch)
+	go UDP_broadcast("129.241.187.255:" + port, msg, terminate_ch, IP_ch)
 	go UDP_receive(port, init_ch, terminate_ch)
 	
-	IP_list, Local_IP 			:= Network_capture_IP(N, init_ch)	
-	terminate_ch 			<- 1
-	terminate_ch 			<- 1
-	time.Sleep(100*time.Millisecond)
+	IP_list 			:= Network_capture_IP(N, init_ch)	
+	Temp_IP 			:= <- IP_ch
+	terminate_ch 		<- 1
+	terminate_ch 		<- 1
 	
 	Utilities_bubble_sort(IP_list)
-
+	Local_IP, _ := strconv.Atoi(Temp_IP[12:15])
 	return IP_list, Local_IP
 }
 
-func Network_capture_IP(N int, init_ch chan Message) ([]int, int){
+func Network_capture_IP(N int, init_ch chan Message) ([]int){
 	
-	IP_list 		:= make([]int, N)
+	IP_list 			:= make([]int, N)
 	loop_counter 		:= 1
 	
 	
 	
 	for loop_counter  < N+1 {
 	
-		chan_value 	:= <- init_ch
-		start_index	:= 12
-		end_index	:= len(chan_value.Local_IP) - 6
-		Local_IP, _ 	:= strconv.Atoi(chan_value.Local_IP[start_index:end_index])
-		i 		:= 0
+		chan_value 			:= <- init_ch
+		Local_IP, _ := strconv.Atoi(chan_value.Local_IP[12:15])
+		i 				:= 0
 		for j := 0; j < N; j++ {
-			fmt.Println(Local_IP)
+			
 			if Local_IP == IP_list[j] {
 				i = 1
 			}
@@ -136,13 +135,9 @@ func Network_capture_IP(N int, init_ch chan Message) ([]int, int){
 	fmt.Println("\n________________________________________________________________________________")
 	fmt.Println("All(", N, ") IP addresses aquired\n")
 	fmt.Println("Starting initialization of elevators\n")
-	chan_value 	:= <- init_ch
-	start_index	:= 12
-	end_index	:= len(chan_value.Local_IP) - 6
-	Local_IP, _ 	:= strconv.Atoi(chan_value.Local_IP[start_index:end_index])	
-
 	
-	return IP_list, Local_IP
+	
+	return IP_list
 }
 
 

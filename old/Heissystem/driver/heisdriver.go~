@@ -4,9 +4,9 @@ import "fmt"
 
 
 const (
-	NO_DIRECTION 	= 0
-	UP 		= 1
-	DOWN 		= 2		
+	NO_DIRECTION = 0
+	UP 			 = 1
+	DOWN 		 = 2		
 )
 
 func Elev_init(N int, M int) int {
@@ -23,12 +23,14 @@ func Elev_init(N int, M int) int {
 	
 	if (!IO_init()) {
 		fmt.Println("The hardware failed to initialize\n")
-		return 1
+		return 1 // error
 	}
+	
+	Orders_make_state_matrix(N, M)
 	Elev_set_destination_floor(1)
 	fmt.Println("\n________________________________________________________________________________")
 	fmt.Println("Initialization successful\n")	
-	return 0 
+	return 0 // success
 }
 
 func Elev_idle() {
