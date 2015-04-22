@@ -8,7 +8,7 @@ import ("./driver"
 const n_elevators 	= 2
 const m_floors 		= 4
 //var Local_IP 		= 0
-var port string 	= "26856"
+var port string 	= "26816"
 
 func main() {
 	
