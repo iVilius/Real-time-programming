@@ -19,26 +19,37 @@ type Message struct {
     Current_time 	time.Time
     Local_IP 		string
     Remote_IP 		string 
+    Trunc_IP		int
 }
 
-func UDP_receive(port string, receive_ch chan Message, terminate_ch chan int)(int, error) {
+func UDP_receive(port string, receive_ch chan Message, sleep_time int)(int, error) {
 	
 	var receive_message Message
 	
 	fmt.Println("Creating new UDP_receive")
-	baddr, err 			:= net.ResolveUDPAddr("udp",":"+port)
+	baddr, err 				:= net.ResolveUDPAddr("udp",":"+port)
 	if err != nil {fmt.Println(err); return -1, err}
 
-	localListenConn, err 		:= net.ListenUDP("udp", baddr)
+	localListenConn, err 	:= net.ListenUDP("udp", baddr)
 	if err != nil {fmt.Println(err); return -1, err}
 	
+	buffer 					:= make([]byte, 1024)
+	
+	n,_,err 				:= localListenConn.ReadFromUDP(buffer[0:])
+	if err != nil {fmt.Println(err); return -1, err}
+		
+	err 					= json.Unmarshal(buffer[:n], &receive_message)
+	if err != nil {fmt.Println(err); return -1, err}
+	
+	
 	for {
-		select {
-		case <- terminate_ch:
+		switch receive_message.ID {
+		case -1:
 			fmt.Println("Terminating UDP_receive")
 			localListenConn.Close()
-			return 0, err
-		default:
+			return -1, err
+			
+		case 2:
 			buffer 			:= make([]byte, 1024)
 		
 			n,_,err 		:= localListenConn.ReadFromUDP(buffer[0:])
@@ -47,57 +58,98 @@ func UDP_receive(port string, receive_ch chan Message, terminate_ch chan int)(in
 			err 			= json.Unmarshal(buffer[:n], &receive_message)
 			if err != nil {fmt.Println(err); return -1, err}
 			receive_ch <- receive_message
-			time.Sleep(500*time.Millisecond)
+			fmt.Println("Received message with ID", receive_message.ID)
+			//fmt.Println("Terminating UDP_receive")
+			//time.Sleep(time.Duration(sleep_time)*time.Millisecond)
+			//return 2, err
+			
+		default:
+			buffer 			:= make([]byte, 1024)
+		
+			n,_,err 		:= localListenConn.ReadFromUDP(buffer[0:])
+			if err != nil {fmt.Println(err); return -1, err}
+		
+			err 			= json.Unmarshal(buffer[:n], &receive_message)
+			if err != nil {fmt.Println(err); return -1, err}
+			
+			receive_ch <- receive_message
+			
+			
+			fmt.Println("Received message with ID", receive_message.ID)
+			time.Sleep(time.Duration(sleep_time)*time.Millisecond)
 			
 		}
 	}
 }
 
-func UDP_broadcast(baddr string, msg Message, terminate_ch chan int) (int, error){
+func UDP_broadcast(baddr string, msg Message, sleep_time int, terminate_ch chan int) (int, error){
 
-	tempConn, err 		:= net.Dial("udp", baddr)
+	tempConn, err 		:= net.Dial("udp", baddr)//"129.241.187.255:" + baddr)
 	if err != nil {fmt.Println(err); return -1, err}
 	
 	msg.Local_IP 		= tempConn.LocalAddr().String()
 	msg.Remote_IP 		= baddr
 	
+	start_index			:= 12
+	end_index			:= len(msg.Local_IP) - 6
+	msg.Trunc_IP, _ 	:= strconv.Atoi(msg.Local_IP[start_index:end_index])
+	
 	for {
 		select {
 		case <- terminate_ch:
-			fmt.Println("Terminating UDP_broadcast")
-			return -1, err
-		default:
-			msg.Current_time 		= time.Now()
+			msg.ID				= -1
+			msg.Current_time 	= time.Now()
 			buff, err 			:= json.Marshal(msg)
 			if err != nil {fmt.Println(err); return -1, err}
 			tempConn.Write([]byte(buff))
-			time.Sleep(1000*time.Millisecond)
+			time.Sleep(time.Duration(sleep_time)*time.Millisecond)
+			fmt.Println("Terminating UDP_broadcast")
+			return -1, err
+		default:
+		}	
+		switch msg.ID {
+		case 2:
+			msg.Current_time 	= time.Now()
+			buff, err 			:= json.Marshal(msg)
+			if err != nil {fmt.Println(err); return -1, err}
+			tempConn.Write([]byte(buff))
+			time.Sleep(time.Duration(sleep_time)*time.Millisecond)
+			msg.ID = 2
+			fmt.Println("Broadcasting with ID", msg.ID)
+			fmt.Println("Terminating UDP_broadcast")
+			return 2, err
+			
+		default:
+			msg.Current_time 	= time.Now()
+			buff, err 			:= json.Marshal(msg)
+			if err != nil {fmt.Println(err); return -1, err}
+			tempConn.Write([]byte(buff))
+			time.Sleep(time.Duration(sleep_time)*time.Millisecond)
 			//fmt.Println("BROADCASTING :)")
 		}
 	}
-	
 	return 0, err
 }
 
 func Network_init(N int, port string)  ([]int, int){
 
 	var msg Message
+	var sleep_time int
 	init_ch 			:= make(chan Message, 1024)
-	terminate_ch			:= make(chan int, 10)
-	//IP_ch				:= make(chan string, 100)
+	terminate_ch		:= make(chan int, 5)
 	
 	msg.ID 				= 0
+	sleep_time			= 100
 	
-	go UDP_broadcast("129.241.187.255:" + port, msg, terminate_ch)
-	go UDP_receive(port, init_ch, terminate_ch)
+	go UDP_broadcast("129.241.187.255:" + port, msg, sleep_time, terminate_ch)
+	go UDP_receive(port, init_ch, sleep_time)
 	
-	IP_list, Local_IP 			:= Network_capture_IP(N, init_ch)
+	IP_list, Local_IP 	:= Network_capture_IP(N, init_ch)
 	
 	time.Sleep(3000*time.Millisecond)
-	terminate_ch 			<- 1
-	terminate_ch 			<- 1
-	
-	
+	terminate_ch		<- -1	// Kill ongoing UDP processes
+
+		
 	Utilities_bubble_sort(IP_list)
 
 	return IP_list, Local_IP
@@ -106,30 +158,29 @@ func Network_init(N int, port string)  ([]int, int){
 func Network_capture_IP(N int, init_ch chan Message) ([]int, int){
 	
 	IP_list 		:= make([]int, N)
-	loop_counter 		:= 1
+	loop_counter 	:= 1
 	
 	
 	
 	for loop_counter  < N+1 {
 	
 		chan_value 	:= <- init_ch
-		start_index	:= 12
-		end_index	:= len(chan_value.Local_IP) - 6
-		Local_IP, _ 	:= strconv.Atoi(chan_value.Local_IP[start_index:end_index])
+		//start_index	:= 12
+		//end_index	:= len(chan_value.Local_IP) - 6
+		//Local_IP, _ 	:= strconv.Atoi(chan_value.Local_IP[start_index:end_index])
 		i 		:= 0
 		for j := 0; j < N; j++ {
-			fmt.Println(Local_IP)
-			if Local_IP == IP_list[j] {
+			if chan_value.Trunc_IP == IP_list[j] {
 				i = 1
 			}
 		}
 		if i != 1 && chan_value.ID == 0 {
 			fmt.Println("\n________________________________________________________________________________")
 			fmt.Println("NEW IP address!")
-			fmt.Println("Pushing elevator nr.",loop_counter, "with ID", Local_IP, "into the list!")
+			fmt.Println("Pushing elevator nr.",loop_counter, "with ID", chan_value.Trunc_IP, "into the list!")
 			fmt.Println(loop_counter, "out of", N, "\n")
 
-			IP_list[loop_counter-1] = Local_IP
+			IP_list[loop_counter-1] = chan_value.Trunc_IP
 			loop_counter++
 		}
 		time.Sleep(100*time.Millisecond)
@@ -138,73 +189,11 @@ func Network_capture_IP(N int, init_ch chan Message) ([]int, int){
 	fmt.Println("\n________________________________________________________________________________")
 	fmt.Println("All(", N, ") IP addresses aquired\n")
 	fmt.Println("Starting initialization of elevators\n")
-	chan_value 	:= <- init_ch
-	start_index	:= 12
-	end_index	:= len(chan_value.Local_IP) - 6
-	Local_IP, _ 	:= strconv.Atoi(chan_value.Local_IP[start_index:end_index])	
+	//chan_value 	:= <- init_ch
+	//start_index	:= 12
+	//end_index	:= len(chan_value.Local_IP) - 6
+	//Local_IP, _ 	:= strconv.Atoi(chan_value.Local_IP[start_index:end_index])	
 
 	
-	return IP_list, Local_IP
+	return IP_list, chan_value.Trunc_IP
 }
-
-
-
-
-/* Replaced by two separate functions
-func Network_init_2(N int, port string) {
-
-	var msg Message
-	init_channel 	:= make(chan Message, 1024)
-	terminate_ch	:= make(chan int, 10)
-	
-		
-	IP_list 		:= list.New() 
-	IP_list.PushFront(N+1)
-	
-	msg.ID 			= 0													// init ID = 0
-	msg.Current_time 	= time.Now()
-	
-	go UDP_broadcast("129.241.187.255:" + port, msg, terminate_ch)
-	go UDP_receive(port, init_channel, terminate_ch)
-	
-	for IP_list.Len() < N+1 {	//N+1
-	
-		counter 	:= 0
-		i 			:= <- init_channel
-		
-		for element := IP_list.Front(); element != nil; element = element.Next() {
-			Local_IP,_ := strconv.Atoi(i.Local_IP[12:15])
-			if Local_IP == element.Value {
-				counter = 1
-			}
-		}
-		if counter != 1 && i.ID == 0 {
-			fmt.Println("\n________________________________________________________________________________")
-			fmt.Println("NEW IP address!")
-			fmt.Println("Pushing elevator nr.",IP_list.Len(), "with ID", i.Local_IP[12:15], "into the list!")
-			fmt.Println(IP_list.Len(), "out of", N, "\n")
-			
-			//Local_IP,_ := strconv.Atoi(i.Local_IP[12:15])
-			Local_ID := IP_list.Len()
-			IP_list.PushFront(Local_ID)
-		}
-		
-		time.Sleep(100*time.Millisecond)
-	}
-	
-	//Utilities_bubble_sort(IP_list)
-	terminate_ch <- 1
-	terminate_ch <- 1
-	
-	fmt.Println("\n________________________________________________________________________________")
-	fmt.Println("All(", N, ") IP addresses aquired\n")
-	fmt.Println("Starting initialization of elevators\n")	
-}
-*/
-
-
-
-
-
-
-

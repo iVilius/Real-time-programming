@@ -5,8 +5,9 @@ package main
 import ("./driver"
 	"fmt")
 
-const n_elevators 	= 1
+const n_elevators 	= 2
 const m_floors 		= 4
+//var Local_IP 		= 0
 var port string 	= "26816"
 
 func main() {
@@ -25,7 +26,7 @@ func main() {
 	
 	if Local_IP == IP_list[0] {
 		
-		driver.Slave_main(n_elevators, m_floors, port, Row)
+		driver.Slave_main(n_elevators, m_floors, port, Row, IP_list)
 	} else {
 		//driver.Master_main(n_elevators, m_floors, port, Row)
 	}

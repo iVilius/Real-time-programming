@@ -4,7 +4,7 @@ package driver
 import (//"fmt"
 		"time")
 		
-func Sensors_check(matrix_ch chan [][]int, row int, m_floors int) {
+func Sensors_poll(matrix_ch chan [][]int, row int, m_floors int) {
 
 	for {
 		time.Sleep(50*time.Millisecond)
