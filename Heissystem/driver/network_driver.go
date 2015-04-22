@@ -60,7 +60,7 @@ func UDP_receive(port string, receive_ch chan Message, sleep_time int)(int, erro
 			receive_ch <- receive_message
 			fmt.Println("Received message with ID", receive_message.ID)
 			//fmt.Println("Terminating UDP_receive")
-			//time.Sleep(time.Duration(sleep_time)*time.Millisecond)
+			//time.Sleep(time.Duration(sleep_time)*time.Millisecond) 
 			//return 2, err
 			
 		default:
@@ -73,9 +73,8 @@ func UDP_receive(port string, receive_ch chan Message, sleep_time int)(int, erro
 			if err != nil {fmt.Println(err); return -1, err}
 			
 			receive_ch <- receive_message
-			
-			
-			fmt.Println("Received message with ID", receive_message.ID)
+			if receive_message.ID == 1 {
+				fmt.Println("I am alive!") }
 			time.Sleep(time.Duration(sleep_time)*time.Millisecond)
 			
 		}
@@ -92,7 +91,8 @@ func UDP_broadcast(baddr string, msg Message, sleep_time int, terminate_ch chan 
 	
 	start_index			:= 12
 	end_index			:= len(msg.Local_IP) - 6
-	msg.Trunc_IP, _ 	:= strconv.Atoi(msg.Local_IP[start_index:end_index])
+	Trunc_IP, _ 		:= strconv.Atoi(msg.Local_IP[start_index:end_index])
+	msg.Trunc_IP 		= Trunc_IP
 	
 	for {
 		select {
@@ -102,7 +102,7 @@ func UDP_broadcast(baddr string, msg Message, sleep_time int, terminate_ch chan 
 			buff, err 			:= json.Marshal(msg)
 			if err != nil {fmt.Println(err); return -1, err}
 			tempConn.Write([]byte(buff))
-			time.Sleep(time.Duration(sleep_time)*time.Millisecond)
+			time.Sleep(time.Duration(500)*time.Millisecond)
 			fmt.Println("Terminating UDP_broadcast")
 			return -1, err
 		default:
@@ -146,7 +146,7 @@ func Network_init(N int, port string)  ([]int, int){
 	
 	IP_list, Local_IP 	:= Network_capture_IP(N, init_ch)
 	
-	time.Sleep(3000*time.Millisecond)
+	time.Sleep(1000*time.Millisecond)
 	terminate_ch		<- -1	// Kill ongoing UDP processes
 
 		
@@ -189,7 +189,7 @@ func Network_capture_IP(N int, init_ch chan Message) ([]int, int){
 	fmt.Println("\n________________________________________________________________________________")
 	fmt.Println("All(", N, ") IP addresses aquired\n")
 	fmt.Println("Starting initialization of elevators\n")
-	//chan_value 	:= <- init_ch
+	chan_value 	:= <- init_ch
 	//start_index	:= 12
 	//end_index	:= len(chan_value.Local_IP) - 6
 	//Local_IP, _ 	:= strconv.Atoi(chan_value.Local_IP[start_index:end_index])	

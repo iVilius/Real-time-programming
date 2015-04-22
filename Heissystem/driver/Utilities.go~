@@ -1,7 +1,7 @@
 package driver
 
 import ("fmt"
-		"time"
+		//"time"
 )
 
 func Utilities_bubble_sort(array []int) {
@@ -48,36 +48,45 @@ func Utilities_broadcast_state(n_elevators int, m_floors int, port string) {
 	msg.Direction 		= Elev_get_direction()
 	
 
-	go UDP_broadcast("129.241.187.255:" + port, msg, 50, terminate_ch)
+	go UDP_broadcast("129.241.187.255:" + port, msg, 5000, terminate_ch)
 	
 }
 
-func Utilities_listen(port string, IP_list []int) ([]int){
+func Utilities_listen(port string, IP_list []int, active_elevator_list_ch chan []int){
 	
 	listen_ch 				:= make(chan Message, 1024)
 	auxilary_list			:= make([]int, len(IP_list))
 	active_elevator_list	:= make([]int, len(IP_list))
-	
-	
 	go UDP_receive(port, listen_ch, 1000)
 	
+	for i := range active_elevator_list {
+		active_elevator_list[i] = 1
+	}
 	
 	for {
 		message			:= <- listen_ch
 		if message.ID == 1 {
 			for i := 0; i < len(IP_list); i++ {
 				if message.Trunc_IP == IP_list[i] {
-					active_elevator_list[i] = 0
+					auxilary_list[i] = 0
 				} else {
-					active_elevator_list[i] = active_elevator_list[i] + 1
+					if active_elevator_list[i] != 0 {
+						auxilary_list[i] = auxilary_list[i] + 1
+						fmt.Println("Incremented elevator value:", auxilary_list[i])
+					}
 				}
-				if active_elevator_list[i] > 50 {
-					active_
-			}			
+				if auxilary_list[i] > 5 {
+					fmt.Println("Elevator", IP_list[i], "is d-e-a-d DEAD")
+					active_elevator_list[i] = 0
+					auxilary_list[i] = 0
+				}			
+			}
 		}
-		time.Sleep(250*time.Millisecond)
-		
+		time.Sleep(10*time.Millisecond)
+		active_elevator_list_ch <- active_elevator_list
+		fmt.Println("Active elevator list:", active_elevator_list)
 	}
+	
 }
 
 
