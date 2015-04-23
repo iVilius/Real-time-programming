@@ -4,7 +4,7 @@ import ("fmt"
 		"time"
 )
 
-func Utilities_bubble_sort(array []int) {
+func Utilities_bubble_sort_asc(array []int) {
 	
 	for i := 0; i < len(array); i++ {
 		for j := 0; j < len(array)-1; j++ {
@@ -60,14 +60,14 @@ func Utilities_listen(port string, IP_list []int, active_elevator_list_ch chan [
 	go UDP_receive(port, listen_ch, 1000)
 	
 	for i := range active_elevator_list {
-		active_elevator_list[i] = 1
+		active_elevator_list[i] = IP_list[i]
 	}
 	
 	for {
 		message			:= <- listen_ch
 		if message.ID == 1 {
 			for i := 0; i < len(IP_list); i++ {
-				if message.Trunc_IP == IP_list[i] {
+			        if message.Trunc_IP == IP_list[i] {
 					auxilary_list[i] = 0
 				} else {
 					if active_elevator_list[i] != 0 {
@@ -88,6 +88,18 @@ func Utilities_listen(port string, IP_list []int, active_elevator_list_ch chan [
 	}
 	
 }
+
+func Utilities_send_new_order() {
+	
+
+}
+
+
+
+
+
+
+
 
 
 

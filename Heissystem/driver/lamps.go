@@ -9,7 +9,7 @@ const (
 
 )
 
-func Lamps_check(M int, row int, door_ch chan int, lamp_ch chan [][]int, terminate_ch chan int) {
+func Lamps_check(m_floors int, row int, door_ch chan int, lamp_ch chan [][]int, terminate_ch chan int) {
 	
 	for {
 		time.Sleep(50*time.Millisecond)
@@ -17,7 +17,7 @@ func Lamps_check(M int, row int, door_ch chan int, lamp_ch chan [][]int, termina
 		case i := <- door_ch:
 			go Lamps_door(i)
 		case i := <- lamp_ch:
-			go Lamps_order_buttons(i, M, row)
+			go Lamps_order_buttons(i, m_floors, row)
 		/*case i := <- stop_ch:
 			go Lamps_stop()*/
 		case <- terminate_ch:

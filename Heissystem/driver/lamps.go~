@@ -9,9 +9,8 @@ const (
 
 )
 
-func Lamps_check(M int, row int, door_ch chan int, lamp_ch chan [][]int, terminate_ch chan int) {
+func Lamps_check(m_floors int, row int, door_ch chan int, lamp_ch chan [][]int, terminate_ch chan int) {
 	
-	i := <- lamp_ch
 	for {
 		time.Sleep(50*time.Millisecond)
 		select {

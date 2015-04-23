@@ -20,6 +20,8 @@ type Message struct {
     Local_IP 		string
     Remote_IP 		string 
     Trunc_IP		int
+    Elevator_order_ID   int
+    Order_type          string
 }
 
 func UDP_receive(port string, receive_ch chan Message, sleep_time int)(int, error) {

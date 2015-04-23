@@ -20,6 +20,8 @@ type Message struct {
     Local_IP 		string
     Remote_IP 		string 
     Trunc_IP		int
+    Elevator_order_ID   int
+    Order_type          string
 }
 
 func UDP_receive(port string, receive_ch chan Message, sleep_time int)(int, error) {
@@ -146,7 +148,7 @@ func Network_init(N int, port string)  ([]int, int){
 	
 	IP_list, Local_IP 	:= Network_capture_IP(N, init_ch)
 	
-	time.Sleep(3000*time.Millisecond)
+	time.Sleep(1000*time.Millisecond)
 	terminate_ch		<- -1	// Kill ongoing UDP processes
 
 		
