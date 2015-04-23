@@ -20,7 +20,7 @@ type Message struct {
     Local_IP 		string
     Remote_IP 		string 
     Trunc_IP		int
-    Elevator_order_ID   int
+    Order_elevator_ID   int
     Order_type          string
 }
 
@@ -152,7 +152,7 @@ func Network_init(N int, port string)  ([]int, int){
 	terminate_ch		<- -1	// Kill ongoing UDP processes
 
 		
-	Utilities_bubble_sort(IP_list)
+	Utilities_bubble_sort_asc(IP_list)
 
 	return IP_list, Local_IP
 }

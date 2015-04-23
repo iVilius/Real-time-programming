@@ -20,7 +20,7 @@ type Message struct {
     Local_IP 		string
     Remote_IP 		string 
     Trunc_IP		int
-    Elevator_order_ID   int
+    Order_elevator_ID   int
     Order_type          string
 }
 

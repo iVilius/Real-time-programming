@@ -5,9 +5,22 @@ package main
 import ("./driver"
 	"fmt")
 
-const n_elevators 	= 2
+const n_elevators 	= 1
 const m_floors 		= 4
-var port string 	= "26816"
+var init_port  string	= "19177"
+var alive_port string 	= "47143"
+var order_port string	= "80085"
+var state_port string 	= "57473"
+
+const	( 	
+	INIT 		= 0
+	ALIVE 		= 1
+	STATE		= 2
+	ORDER_NEW 	= 3
+	ORDER_NEW_ACK 	= 4
+	ORDER_ASSIGN	= 5
+	ORDER_ASSIGN_ACK= 6
+	)
 
 func main() {
 	
@@ -17,7 +30,7 @@ func main() {
 	}	
 
 
-	IP_list, Local_IP := driver.Network_init(n_elevators, port)
+	IP_list, Local_IP := driver.Network_init(n_elevators, init_port)
 
 	driver.Elev_init(n_elevators, m_floors)
 	
@@ -25,9 +38,9 @@ func main() {
 	
 	if Local_IP == IP_list[0] {
 		
-		driver.Slave_main(n_elevators, m_floors, port, Row, IP_list)
+		driver.Master_main(n_elevators, m_floors, alive_port, order_port, state_port, Row, IP_list)
 	} else {
-		//driver.Master_main(n_elevators, m_floors, port, Row)
+		driver.Slave_main(n_elevators, m_floors, alive_port, order_port, state_port, Row, IP_list)
 	}
 }
 
