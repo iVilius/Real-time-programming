@@ -3,47 +3,55 @@ package driver
 import ("fmt"
 		"time")
 
-func Slave_main(n_elevators int, m_floors int, alive_port string, order_port string, state_port string, row int, IP_list []int) {
+func Slave_main(Alive_port string, Order_port string, state_port string, row int, IP_list []int, receive_ch chan Message) {
 
 	time.Sleep(2000*time.Millisecond)
 	fmt.Print("I am slave\n")
 
-	door_ch					:= make(chan int, 1)
 	terminate_ch				:= make(chan int, 1)
-	matrix_ch				:= make(chan [][]int, 5)
-	active_elevator_list_ch 		:= make(chan []int, 100)
+	active_elevator_list_ch 	:= make(chan []int, 100)
+	receive_ch					:= make(chan Message, 500)
 	
-	matrix_ch <- Orders_make_state_matrix(n_elevators, m_floors)
-	matrix_ch <- Orders_make_state_matrix(n_elevators, m_floors)
+	state_matrix 				:= Orders_make_state_matrix()
 	
-	go Utilities_send_i_am_alive(n_elevators, m_floors, alive_port)
-	go Lamps_check(m_floors, row, door_ch, matrix_ch, terminate_ch)
-	go Sensors_poll(matrix_ch, row, m_floors)
+	//go UDP_receive(Order_port, receive_ch, 100)
+	go Utilities_send_i_am_alive(Alive_port)
+	go Lamps_main(row, state_matrix, terminate_ch)
+	go Sensors_main(state_matrix, row, receive_ch)
 	
-	Utilities_whos_alive(alive_port, IP_list, active_elevator_list_ch)
-	Slave_send_state_to_master(n_elevators, m_floors, state_port)
+	go Utilities_whos_alive(Alive_port, IP_list, active_elevator_list_ch)
+	go Slave_send_state_to_master(state_port)
 	
 	for {
-		active_elevator_list := <- active_elevator_list_ch
-		fmt.Println(active_elevator_list)
-		time.Sleep(1000*time.Millisecond)
+		select {
+		case i := <- receive_ch:
+			if i.ID == ORDER_ASSIGN {
+				fmt.Println("I will execute order", i.Order_type)
+				Utilities_ack_order(Order_port, ORDER_ASSIGN_ACK)
+				time.Sleep(5000*time.Millisecond)
+				Utilities_send_order_done(i, Order_port, receive_ch)
+			}	
+		default:
+			i := <- receive_ch
+			fmt.Println("RECEIVE", i.ID)
+		}
 	}
 	
 }
 
-func Slave_send_state_to_master(n_elevators int, m_floors int, port string) {
+func Slave_send_state_to_master(port string) {
 
-	var latest_floor int 		= Elev_get_latest_floor()
-	var current_direction int 	= Elev_get_direction()
+	var latest_floor int 		= Sensors_get_latest_floor()
+	var current_direction int 	= Motor_get_direction()
 
 	for { //Sjekker om endring i tilstand
-		if (Elev_get_latest_floor() != latest_floor || Elev_get_direction() != current_direction) {
-			Utilities_broadcast_state(n_elevators, m_floors, port)
+		if (Sensors_get_latest_floor() != latest_floor || Motor_get_direction() != current_direction) {
+			Utilities_broadcast_state(port)
 			fmt.Println("New floor or direction!")
 			time.Sleep(100*time.Millisecond)
 		}
-		latest_floor 		= Elev_get_latest_floor()
-		current_direction 	= Elev_get_direction()
+		latest_floor 		= Sensors_get_latest_floor()
+		current_direction 	= Motor_get_direction()
 		time.Sleep(100*time.Millisecond)
 	}
 }

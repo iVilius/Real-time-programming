@@ -28,25 +28,24 @@ func Utilities_find_column_in_state_matrix(value int, array []int) (int) {
 	return -1
 }
 
-func Utilities_send_i_am_alive(n_elevators int, m_floors int, port string) {
+func Utilities_send_i_am_alive(port string) {
 	
 	var msg Message
 	terminate_ch 			:= make(chan int, 1)
 	
-	msg.ID 				= 1
+	msg.ID 					= 1
 
 	go UDP_broadcast("129.241.187.255:" + port, msg, 2000, terminate_ch)
 }
 
-func Utilities_broadcast_state(n_elevators int, m_floors int, port string) {
+func Utilities_broadcast_state(port string) {
 	
 	var msg Message
-	msg.ID 				= 2
+	msg.ID 					= 2
 	terminate_ch 			:= make(chan int, 1)
 	
-	msg.Latest_floor 		= Elev_get_latest_floor()
-	msg.Direction 			= Elev_get_direction()
-	
+	msg.Latest_floor 		= Sensors_get_latest_floor()
+	msg.Direction 			= Motor_get_direction()
 
 	go UDP_broadcast("129.241.187.255:" + port, msg, 5000, terminate_ch)
 	
@@ -57,9 +56,10 @@ func Utilities_broadcast_state(n_elevators int, m_floors int, port string) {
 
 func Utilities_whos_alive(port string, IP_list []int, active_elevator_list_ch chan []int){
 	
-	listen_ch 			:= make(chan Message, 1024)
+	listen_ch 				:= make(chan Message, 1024)
 	auxilary_list			:= make([]int, len(IP_list))
-	active_elevator_list		:= make([]int, len(IP_list))
+	active_elevator_list	:= make([]int, len(IP_list))
+	
 	go UDP_receive(port, listen_ch, 1000)
 	
 	for i := range active_elevator_list {
@@ -67,7 +67,7 @@ func Utilities_whos_alive(port string, IP_list []int, active_elevator_list_ch ch
 	}
 	
 	for {
-		message			:= <- listen_ch
+		message				:= <- listen_ch
 		if message.ID == 1 {
 			for i := 0; i < len(IP_list); i++ {
 			        if message.Trunc_IP == IP_list[i] {
@@ -75,7 +75,6 @@ func Utilities_whos_alive(port string, IP_list []int, active_elevator_list_ch ch
 				} else {
 					if active_elevator_list[i] != 0 {
 						auxilary_list[i] = auxilary_list[i] + 1
-						fmt.Println("Incremented elevator value:", auxilary_list[i])
 					}
 				}
 				if auxilary_list[i] > 5 {
@@ -87,54 +86,37 @@ func Utilities_whos_alive(port string, IP_list []int, active_elevator_list_ch ch
 		}
 		time.Sleep(10*time.Millisecond)
 		active_elevator_list_ch <- active_elevator_list
-		fmt.Println("Active elevator list:", active_elevator_list)
 	}
 }
 
-func Utilities_send_new_order(port string, new_order string) {
+func Utilities_send_new_order(port string, new_order string, receive_ch chan Message) {
 	
-	var order Message
+		fmt.Println("---Sending NEW ORDER -", new_order)
+		var order Message
         var sleep_time int 		= 100
-        receive_ch			:= make(chan Message, 500)
+        
         terminate_ch 			:= make(chan int, 10)
         
         order.ID                	= 3 // send new order
         order.Order_type        	= new_order
         
         go UDP_broadcast("129.241.187.255:" + port, order, sleep_time, terminate_ch)
-        go UDP_receive(port, receive_ch, sleep_time)
         
         for {
         	select {
         	case i := <- receive_ch:
-        		if i.ID == 4 {
+        		if i.ID == ORDER_NEW_ACK {
+        			fmt.Println("---Order", new_order, "has arived at Master")
+        			
         			terminate_ch <- 1
+        			return
         		}
         	}
         }
 }
 
-func Utilities_send_order_done(port string, order string) {
-
-	var message Message
-	var sleep_time int
-	terminate_ch			:= make(chan int, 10)
-	receive_ch			:= make(chan Message 500)
+func Utilities_execute_order(port string, order string) {
 	
-	message.ID			= 7
-	message.Order_type		= order
-	
-	go UDP_broadcast("129.241.187.255:" + port, message, sleep_time, terminate_ch)
-	go UDP_receive(port, receive_ch, sleep_time)
-        
-        for {
-        	select {
-        	case i := <- receive_ch:
-        		if i.ID == 8 {
-        			terminate_ch <- 1
-        		}
-        	}
-        }
 }
 
 func Utilities_ack_order(port string, message_ID int) {
@@ -151,30 +133,32 @@ func Utilities_ack_order(port string, message_ID int) {
 	terminate_ch <- 1
 }
 
-func Utilities_execute_order(new_order string, port string, ) {
+func Utilities_send_order_done(message Message, port string, receive_ch chan Message) {
 	
-	var order Message
-        var sleep_time int 		= 100
-        receive_ch			:= make(chan Message, 500)
-        terminate_ch 			:= make(chan int, 10)
+		fmt.Println("---Order", message.Order_type, "is done. Please remove it from the queue")
+		var order Message
+        var sleep_time int 			= 100
         
-        order.ID                	= 3 // send new order
-        order.Order_type        	= new_order
+        terminate_ch 				:= make(chan int, 10)
+        
+        order.ID                	= ORDER_DONE // send new order
+        order.Order_type        	= message.Order_type
         
         go UDP_broadcast("129.241.187.255:" + port, order, sleep_time, terminate_ch)
-        go UDP_receive(port, receive_ch, sleep_time)
         
         for {
         	select {
         	case i := <- receive_ch:
-        		if i.ID == 4 {
+        		if i.ID == ORDER_DONE_ACK {
+        			fmt.Println("---Order transaction terminated")
         			terminate_ch <- 1
+        			return
         		}
         	}
         }
 }
 
-func Utilities_listen_state_and_update_state_matrix(state_port string, IP_list []int, state_matrix [][]int, state_matrix_ch chan [][]int) {
+func Utilities_listen_state_and_update_state_matrix(state_port string, IP_list []int, state_matrix [][]int) {
 	
 	var sleep_time int 		= 100
         receive_ch			:= make(chan Message, 500)
@@ -194,8 +178,7 @@ func Utilities_listen_state_and_update_state_matrix(state_port string, IP_list [
         			}
         		}        		
         	}        	        	
-        state_matrix_ch <- state_matrix
-        }	
+        }
 }
 
 

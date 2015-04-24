@@ -5,11 +5,11 @@ import "fmt"
 
 const (
 	NO_DIRECTION 	= 0
-	UP 		= 1
-	DOWN 		= 2		
+	UP 				= 1
+	DOWN 			= 2		
 )
 
-func Motor_init(N int, M int) int {
+func Motor_init() int {
 	
 	
 	/*
@@ -29,19 +29,18 @@ func Motor_init(N int, M int) int {
 	Motor_set_direction(DOWN)
 	
 	for {
-		if Elev_get_latest_floor() == 1 {
-			Elev_set_direction(NO_DIRECTION)
+		if Sensors_get_latest_floor() == 1 {
+			Motor_set_direction(NO_DIRECTION)
 			break
 		}
 	}
-	
-	//Elev_set_destination_floor(4)
+
 	fmt.Println("\n________________________________________________________________________________")
 	fmt.Println("Initialization successful\n")	
 	return 0 
 }
 
-func Elev_idle() {
+func Motor_main() {
 	
 	
 	
@@ -82,20 +81,20 @@ func Motor_get_direction() int {
 
 func Motor_set_destination_floor(floor int) int {
 	
-	if (Elev_get_latest_floor() == floor) { //dependencies?!?
-		Elev_set_direction(NO_DIRECTION)
+	if (Sensors_get_latest_floor() == floor) { //dependencies?!?
+		Motor_set_direction(NO_DIRECTION)
 		return 0
 	}
 	
-	if (floor < Elev_get_latest_floor()) {
-		Elev_set_direction(DOWN)
-		for Elev_get_latest_floor() != floor {}
-		Elev_set_direction(NO_DIRECTION)
+	if (floor < Sensors_get_latest_floor()) {
+		Motor_set_direction(DOWN)
+		for Sensors_get_latest_floor() != floor {}
+		Motor_set_direction(NO_DIRECTION)
 		return 0
-	} else if (floor > Elev_get_latest_floor()) {
-		Elev_set_direction(UP)
-		for Elev_get_latest_floor() != floor {}
-		Elev_set_direction(NO_DIRECTION)
+	} else if (floor > Sensors_get_latest_floor()) {
+		Motor_set_direction(UP)
+		for Sensors_get_latest_floor() != floor {}
+		Motor_set_direction(NO_DIRECTION)
 		return 0
 		
 	} else {
@@ -105,34 +104,6 @@ func Motor_set_destination_floor(floor int) int {
 	return 1
 }
 
-func Sensors_get_latest_floor() int {
-	
-	if (IO_read_bit(SENSOR_FLOOR1) == 1) {
-		return 1
-	} else if (IO_read_bit(SENSOR_FLOOR2) == 1) {
-		return 2
-	} else if (IO_read_bit(SENSOR_FLOOR3) == 1) {
-		return 3
-	} else if (IO_read_bit(SENSOR_FLOOR4) == 1) {
-		return 4
-	} else {
-		return -1 // error
-	}
-}
-
-// SKAL TIL SENSORS
-
-func Sensors_get_obstruction() {
-
-	IO_read_bit(OBSTRUCTION)
-}
-
-// SKAL TIL SENSORS
-
-func Sensors_get_stop() {
-
-	IO_read_bit(STOP)
-}
 
 func Elev_threads() {
 	/*go elev_thread_motor(matrix)

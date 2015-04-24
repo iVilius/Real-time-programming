@@ -11,19 +11,6 @@ import (
 	"strconv"
 )
 
-type Message struct {
-
-    ID 			int // 0 for init, 1 for <I am alive>, 9000 for error, 666 to escape current go routine
-    Latest_floor 	int // 1 for first, 2 for second and so on
-    Direction 		int	// 0 for NO_DIRECTION, 1 for UP and 2 for DOWN
-    Current_time 	time.Time
-    Local_IP 		string
-    Remote_IP 		string 
-    Trunc_IP		int
-    Order_elevator_ID   int
-    Order_type          string
-}
-
 func UDP_receive(port string, receive_ch chan Message, sleep_time int)(int, error) {
 	
 	var receive_message Message
@@ -75,9 +62,12 @@ func UDP_receive(port string, receive_ch chan Message, sleep_time int)(int, erro
 			if err != nil {fmt.Println(err); return -1, err}
 			
 			receive_ch <- receive_message
+			/*
 			if receive_message.ID == 1 {
 				fmt.Println("I am alive!") }
+				*/
 			time.Sleep(time.Duration(sleep_time)*time.Millisecond)
+			fmt.Println("RECEIVE:", receive_message.ID)
 			
 		}
 	}
@@ -99,19 +89,18 @@ func UDP_broadcast(baddr string, msg Message, sleep_time int, terminate_ch chan 
 	for {
 		select {
 		case <- terminate_ch:
-			msg.ID				= -1
+			/*msg.ID				= -1
 			msg.Current_time 	= time.Now()
 			buff, err 			:= json.Marshal(msg)
 			if err != nil {fmt.Println(err); return -1, err}
 			tempConn.Write([]byte(buff))
 			time.Sleep(time.Duration(500)*time.Millisecond)
-			fmt.Println("Terminating UDP_broadcast")
+			fmt.Println("Terminating UDP_broadcast")*/
 			return -1, err
 		default:
 		}	
 		switch msg.ID {
 		case 2:
-			msg.Current_time 	= time.Now()
 			buff, err 			:= json.Marshal(msg)
 			if err != nil {fmt.Println(err); return -1, err}
 			tempConn.Write([]byte(buff))
@@ -122,34 +111,34 @@ func UDP_broadcast(baddr string, msg Message, sleep_time int, terminate_ch chan 
 			return 2, err
 			
 		default:
-			msg.Current_time 	= time.Now()
 			buff, err 			:= json.Marshal(msg)
 			if err != nil {fmt.Println(err); return -1, err}
 			tempConn.Write([]byte(buff))
 			time.Sleep(time.Duration(sleep_time)*time.Millisecond)
-			//fmt.Println("BROADCASTING :)")
+			fmt.Println("BROADCAST:", msg.ID)
 		}
 	}
 	return 0, err
 }
 
-func Network_init(N int, port string)  ([]int, int){
+func Network_init(port string, receive_ch chan Message)  ([]int, int){
 
 	var msg Message
 	var sleep_time int
-	init_ch 			:= make(chan Message, 1024)
+	
 	terminate_ch		:= make(chan int, 5)
 	
 	msg.ID 				= 0
 	sleep_time			= 100
 	
 	go UDP_broadcast("129.241.187.255:" + port, msg, sleep_time, terminate_ch)
-	go UDP_receive(port, init_ch, sleep_time)
+	go UDP_receive(port, receive_ch, sleep_time)
 	
-	IP_list, Local_IP 	:= Network_capture_IP(N, init_ch)
+	IP_list, Local_IP 	:= Network_capture_IP(receive_ch)
 	
 	time.Sleep(1000*time.Millisecond)
 	terminate_ch		<- -1	// Kill ongoing UDP processes
+	
 
 		
 	Utilities_bubble_sort_asc(IP_list)
@@ -157,21 +146,21 @@ func Network_init(N int, port string)  ([]int, int){
 	return IP_list, Local_IP
 }
 
-func Network_capture_IP(N int, init_ch chan Message) ([]int, int){
+func Network_capture_IP(init_ch chan Message) ([]int, int){
 	
-	IP_list 		:= make([]int, N)
+	IP_list 		:= make([]int, N_elevators)
 	loop_counter 	:= 1
 	
 	
 	
-	for loop_counter  < N+1 {
+	for loop_counter  < N_elevators+1 {
 	
 		chan_value 	:= <- init_ch
 		//start_index	:= 12
 		//end_index	:= len(chan_value.Local_IP) - 6
 		//Local_IP, _ 	:= strconv.Atoi(chan_value.Local_IP[start_index:end_index])
 		i 		:= 0
-		for j := 0; j < N; j++ {
+		for j := 0; j < N_elevators; j++ {
 			if chan_value.Trunc_IP == IP_list[j] {
 				i = 1
 			}
@@ -180,7 +169,7 @@ func Network_capture_IP(N int, init_ch chan Message) ([]int, int){
 			fmt.Println("\n________________________________________________________________________________")
 			fmt.Println("NEW IP address!")
 			fmt.Println("Pushing elevator nr.",loop_counter, "with ID", chan_value.Trunc_IP, "into the list!")
-			fmt.Println(loop_counter, "out of", N, "\n")
+			fmt.Println(loop_counter, "out of", N_elevators, "\n")
 
 			IP_list[loop_counter-1] = chan_value.Trunc_IP
 			loop_counter++
@@ -189,7 +178,7 @@ func Network_capture_IP(N int, init_ch chan Message) ([]int, int){
 	}
 		
 	fmt.Println("\n________________________________________________________________________________")
-	fmt.Println("All(", N, ") IP addresses aquired\n")
+	fmt.Println("All(", N_elevators, ") IP addresses aquired\n")
 	fmt.Println("Starting initialization of elevators\n")
 	chan_value 	:= <- init_ch
 	//start_index	:= 12

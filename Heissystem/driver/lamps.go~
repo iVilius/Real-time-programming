@@ -9,22 +9,17 @@ const (
 
 )
 
-func Lamps_check(m_floors int, row int, door_ch chan int, lamp_ch chan [][]int, terminate_ch chan int) {
+func Lamps_main(row int, state_matrix [][]int, terminate_ch chan int) {
 	
 	for {
 		time.Sleep(50*time.Millisecond)
 		select {
-		case i := <- door_ch:
-			go Lamps_door(i)
-		case i := <- lamp_ch:
-			go Lamps_order_buttons(i, M, row)
-		/*case i := <- stop_ch:
-			go Lamps_stop()*/
 		case <- terminate_ch:
 			return
 		default:
 			Lamps_stop_button()
 			Lamps_latest_floor()
+			Lamps_order_buttons(state_matrix, row)
 			
 			time.Sleep(50*time.Millisecond)
 		}
@@ -42,7 +37,7 @@ func Lamps_stop_button() {
 
 func Lamps_latest_floor() {
 
-	switch Elev_get_latest_floor() {
+	switch Sensors_get_latest_floor() {
 	case 1:
 		IO_clear_bit(LIGHT_FLOOR_IND1)
 		IO_clear_bit(LIGHT_FLOOR_IND2)
@@ -59,14 +54,14 @@ func Lamps_latest_floor() {
 	}
 }
 
-func Lamps_order_buttons(array [][]int, m_floors int, row int) {
+func Lamps_order_buttons(array [][]int, row int) {
 	
-	if m_floors == 2 {
+	if M_floors == 2 {
 		IO_write_analog(ORDER1, array[row][3])
 		IO_write_analog(ORDER2, array[row][4])
 		IO_write_analog(UP1, 	array[row][5])
 		IO_write_analog(DOWN2, 	array[row][6])
-	} else if m_floors == 3 {
+	} else if M_floors == 3 {
 		IO_write_analog(ORDER1, array[row][3])
 		IO_write_analog(ORDER2, array[row][4])
 		IO_write_analog(ORDER3, array[row][5])	
@@ -74,7 +69,7 @@ func Lamps_order_buttons(array [][]int, m_floors int, row int) {
 		IO_write_analog(UP2, 	array[row][7])
 		IO_write_analog(DOWN2, 	array[row][8])
 		IO_write_analog(DOWN3, 	array[row][9])
-	} else if m_floors == 4 {
+	} else if M_floors == 4 {
 		IO_write_analog(ORDER1, array[row][3])
 		IO_write_analog(ORDER2, array[row][4])
 		IO_write_analog(ORDER3, array[row][5])
@@ -86,7 +81,7 @@ func Lamps_order_buttons(array [][]int, m_floors int, row int) {
 		IO_write_analog(DOWN3,	array[row][11])
 		IO_write_analog(DOWN4, 	array[row][12])
 	} else {
-		fmt.Println("Lamps: the system is not suited for", m_floors, "floors")
+		fmt.Println("Lamps: the system is not suited for", M_floors, "floors")
 		return
 	}
 }
@@ -95,6 +90,42 @@ func Lamps_order_buttons(array [][]int, m_floors int, row int) {
 func Lamps_door(value int) {
 	
 	IO_write_analog(LIGHT_DOOR_OPEN, value)
+}
+
+func Lamps_set_stop_light(value int) {
+
+	if (value == 1) {
+		IO_set_bit(LIGHT_STOP)
+	} else {
+		IO_clear_bit(LIGHT_STOP)
+	}	
+}
+
+func Lamps_set_UPDOWN_light(button int, value int) {
+
+	if (value == 1) {
+		IO_set_bit(button)
+	} else {
+		IO_clear_bit(button)
+	}
+}
+
+func Lamps_set_order_light(button int, value int) {
+
+	if (value == 1) {
+		IO_set_bit(button)
+	} else {
+		IO_clear_bit(button)
+	}
+}
+
+func Lamps_set_door_light(value int) {
+
+	if (value == 1) {
+		IO_set_bit(LIGHT_DOOR_OPEN)
+	} else { 
+		IO_clear_bit(LIGHT_DOOR_OPEN)
+	}
 }
 
 
