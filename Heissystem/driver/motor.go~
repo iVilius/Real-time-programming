@@ -40,7 +40,7 @@ func Motor_init() int {
 	return 0 
 }
 
-func Motor_idle() {
+func Motor_main() {
 	
 	
 	

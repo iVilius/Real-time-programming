@@ -18,14 +18,10 @@ func Sensors_get_latest_floor() int {
 	}
 }
 
-// SKAL TIL SENSORS
-
 func Sensors_get_obstruction() {
 
 	IO_read_bit(OBSTRUCTION)
 }
-
-// SKAL TIL SENSORS
 
 func Sensors_get_stop() {
 
@@ -35,7 +31,6 @@ func Sensors_get_stop() {
 func Sensors_main(state_matrix [][]int, row int, receive_ch chan Message) {
 
 	for {
-		time.Sleep(50*time.Millisecond)
 		select {
 		
 		/*case i := <- order_ch:
@@ -76,6 +71,9 @@ func Sensors_buttons(matrix [][]int, row int, receive_ch chan Message) {
 			Utilities_send_new_order(Order_port, message.Order_type, receive_ch)
 		}
 	}
+	
+	
+	
 	
 	/*
 	Orders_update_state_matrix(matrix, row, M_floors, 2, "ORDER", IO_read_analog(BUTTON_COMMAND2))

@@ -8,9 +8,9 @@ package driver
 const N_elevators 		= 2
 const M_floors 			= 4
 
-var Init_port  string	= "19177"
+var Init_port  string	= "19174"
 var Alive_port string 	= "47143"
-var Order_port string	= "12340"
+var Order_port string	= "13340"
 var State_port string 	= "57473"
 
 type Message struct {
@@ -23,6 +23,7 @@ type Message struct {
     Trunc_IP		int
     Order_elevator_ID   int
     Order_type          string
+    State_matrix	[][]int
 }
 
 const	( 	
@@ -35,19 +36,20 @@ const	(
 	ORDER_ASSIGN_ACK	= 6
 	ORDER_DONE			= 7
 	ORDER_DONE_ACK		= 8
+	STATE_MATRIX_UPDATE	= 9
 	)
 
 
 //in port 4
 const (
-	PORT4 			= 3
+	PORT4 				= 3
 	OBSTRUCTION 		= 0x300+23
-	STOP 			= 0x300+22
+	STOP 				= 0x300+22
 	BUTTON_COMMAND1 	= 0x300+21
 	BUTTON_COMMAND2 	= 0x300+20
 	BUTTON_COMMAND3 	= 0x300+19
 	BUTTON_COMMAND4 	= 0x300+18
-	BUTTON_UP1		= 0x300+17
+	BUTTON_UP1			= 0x300+17
 	BUTTON_UP2  		= 0x300+16
 )
 //out port 3
@@ -64,20 +66,20 @@ const (
 )
 //out port 2
 const (
-	PORT2 			= 3
-	DOWN2 			= 0x300+7
-	UP3 			= 0x300+6
-	DOWN3 			= 0x300+5
-	DOWN4 			= 0x300+4
+	PORT2 				= 3
+	DOWN2 				= 0x300+7
+	UP3 				= 0x300+6
+	DOWN3 				= 0x300+5
+	DOWN4 				= 0x300+4
 	LIGHT_DOOR_OPEN 	= 0x300+3
 	LIGHT_FLOOR_IND2	= 0x300+1
 	LIGHT_FLOOR_IND1	= 0x300+0
 )
 //in port 1
 const (
-	PORT1 			= 2
+	PORT1 				= 2
 	BUTTON_DOWN2 		= 0x200+0
-	BUTTON_UP3 		= 0x200+1
+	BUTTON_UP3 			= 0x200+1
 	BUTTON_DOWN3 		= 0x200+2
 	BUTTON_DOWN4 		= 0x200+3
 	SENSOR_FLOOR1 		= 0x200+4

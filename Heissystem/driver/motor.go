@@ -111,3 +111,7 @@ func Elev_threads() {
 	go elev_thread_buttons(matrix)
 	*/
 }
+
+//Lage KØ
+//Lage en intern prioritetsalgoritme lik den vi hadde i datastyring
+// Sjekke køen: Noen ordre i current direction? etc etc etc

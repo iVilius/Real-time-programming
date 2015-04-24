@@ -17,7 +17,23 @@ func Cost_main(message Message, order_port string, state_matrix [][]int, active_
 	
 	time.Sleep(2000*time.Millisecond)
 	Cost_send_order(lucky_elevator, order_port, message, receive_ch)
+
 }
+
+func Cost_send_state_matrix(state_matrix [][]int, port string) {
+	
+	var message Message
+	var sleep_time int 		= 100
+	terminate_ch			:= make(chan int, 10)
+	
+	message.ID				= STATE_MATRIX_UPDATE
+
+	go UDP_broadcast("129.241.187.255:" + port, message, sleep_time, terminate_ch)
+	
+	time.Sleep(100*time.Millisecond)
+	terminate_ch <- 1
+}
+
 
 func Cost_check_if_intern_order(message Message, active_elevators []int, temp_cost_list []int, state_matrix [][]int) ([]int, int) {
 
@@ -80,7 +96,7 @@ func Cost_return_lucky_elevator(array []int, active_elevators []int) int{
         }
         
         if active_elevators[temp_index] == 0 {
-                fmt.Println("Cost: no elevator deserves the order")
+                fmt.Println("Cost: inactive elevator cannot receive orders")
                 return -1               
         }
         
@@ -92,9 +108,9 @@ func Cost_delete_order(port string, message Message, state_matrix [][]int, activ
 	for i := 0; i < len(active_elevators); i++ {
 			if active_elevators[i] == message.Trunc_IP {
 				Orders_update_state_matrix(message, state_matrix, i, 0)
-				fmt.Println("Following order deleted: ", message.Order_type)
 			}
 	}
+	fmt.Println("---Deleting the order")
 }
 
 func Cost_calculate_cost_array(active_elevators []int, state_matrix [][]int, message Message) []int {
