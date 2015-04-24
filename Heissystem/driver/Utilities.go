@@ -114,6 +114,21 @@ func Utilities_send_new_order(port string, new_order string) {
         }
 }
 
+func Utilities_send_order_done(port string, order string) {
+
+	var message Message
+	var sleep_time int
+	terminate_ch			:= make(chan int, 10)
+	
+	message.ID			= 7
+	message.Order_type		= order
+	
+	go UDP_broadcast("129.241.187.255:" + port, message, sleep_time, terminate_ch)
+	
+	time.Sleep(1000*time.Millisecond)
+	terminate_ch <- 1
+}
+
 func Utilities_ack_order(port string, message_ID int) {
 	
 	var message Message

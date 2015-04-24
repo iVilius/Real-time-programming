@@ -35,7 +35,7 @@ func Elev_init(N int, M int) int {
 		}
 	}
 	
-	//Elev_set_destination_floor(1)
+	//Elev_set_destination_floor(4)
 	fmt.Println("\n________________________________________________________________________________")
 	fmt.Println("Initialization successful\n")	
 	return 0 

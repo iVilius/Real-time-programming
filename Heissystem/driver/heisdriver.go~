@@ -146,6 +146,7 @@ func Elev_set_stop_light(value int) {
 		IO_clear_bit(LIGHT_STOP)
 	}	
 }
+// SKAL TIL SENSORS
 
 func Elev_get_stop() {
 

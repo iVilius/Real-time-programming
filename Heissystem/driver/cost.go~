@@ -38,9 +38,10 @@ func Cost_calculate_cost_array(active_elevators []int, state_matrix [][]int, mes
 }
 func Cost_check_if_intern_order(message Message, active_elevators []int, temp_cost_list []int) ([]int, int) {
 
-	if (message.Order_type == "1" || message.Order_type == "2" || message.Order_type == "3" || message.Order_type == "4") {
+	if (message.Order_type == "ORDER1" || message.Order_type == "ORDER2" || message.Order_type == "ORDER3" || message.Order_type == "ORDER4") {
 		for i := 0; i < len(active_elevators); i++ {
 			if active_elevators[i] == message.Trunc_IP {
+				Orders_update_state_matrix()
 				temp_cost_list[i] = -1
 				return temp_cost_list, 1
 			}

@@ -5,7 +5,7 @@ package main
 import ("./driver"
 	"fmt")
 
-const n_elevators 	= 1
+const n_elevators 	= 2
 const m_floors 		= 4
 var init_port  string	= "19177"
 var alive_port string 	= "47143"
@@ -20,6 +20,8 @@ const	(
 	ORDER_NEW_ACK 	= 4
 	ORDER_ASSIGN	= 5
 	ORDER_ASSIGN_ACK= 6
+	ORDER_DONE	= 7
+	ORDER_DONE_ACK	= 8
 	)
 
 func main() {
