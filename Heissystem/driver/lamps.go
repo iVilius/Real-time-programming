@@ -87,9 +87,11 @@ func Lamps_order_buttons(array [][]int, row int) {
 }
 
 
-func Lamps_door(value int) {
+func Lamps_door() {
 	
-	IO_write_analog(LIGHT_DOOR_OPEN, value)
+	IO_write_analog(LIGHT_DOOR_OPEN, 1)
+	time.Sleep(1000*time.Millisecond)
+	IO_write_analog(LIGHT_DOOR_OPEN, 0)
 }
 
 func Lamps_set_stop_light(value int) {

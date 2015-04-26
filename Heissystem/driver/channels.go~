@@ -23,7 +23,7 @@ type Message struct {
     Trunc_IP		int
     Order_elevator_ID   int
     Order_type          string
-    
+    State_matrix	[][]int
 }
 
 const	( 	

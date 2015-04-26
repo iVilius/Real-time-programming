@@ -15,6 +15,7 @@ func Slave_main(Alive_port string, Order_port string, state_port string, row int
 	receive_ch					:= make(chan Message, 500)
 	
 	state_matrix 				:= Orders_make_state_matrix()
+	local_order_queue		:= make([]int, len(state_matrix))
 	
 	go UDP_receive(Order_port, receive_ch, 10)
 	go Utilities_send_i_am_alive(Alive_port)
@@ -31,13 +32,14 @@ func Slave_main(Alive_port string, Order_port string, state_port string, row int
 			if i.ID == ORDER_ASSIGN {
 				fmt.Println("I will execute order", i.Order_type)
 				Utilities_ack_order(Order_port, ORDER_ASSIGN_ACK)
-				floor,_ := strconv.Atoi(i.Order_type[0:1])
-				Motor_set_destination_floor(floor)
-				time.Sleep(10*time.Millisecond)
+				Orders_update_elevator_queue(local_order_queue, i, 1)
+				time.Sleep(100*time.Millisecond)
 				Utilities_send_order_done(i, Order_port, receive_ch)
 			} else if i.ID == STATE_MATRIX_UPDATE {
 				state_matrix = i.State_matrix
 			}	
+		default:
+			Orders_execute_orders(local_order_queue)
 		}
 	}
 	

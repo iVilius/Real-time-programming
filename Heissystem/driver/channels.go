@@ -15,12 +15,12 @@ var State_port string 	= "57473"
 
 type Message struct {
 
-    ID 			int // 0 for init, 1 for <I am alive>, 9000 for error, 666 to escape current go routine
-    Latest_floor 	int // 1 for first, 2 for second and so on
-    Direction 		int	// 0 for NO_DIRECTION, 1 for UP and 2 for DOWN
-    Local_IP 		string
-    Remote_IP 		string 
-    Trunc_IP		int
+    ID 					int // 0 for init, 1 for <I am alive>, 9000 for error, 666 to escape current go routine
+    Latest_floor 		int // 1 for first, 2 for second and so on
+    Direction 			int	// 0 for NO_DIRECTION, 1 for UP and 2 for DOWN
+    Local_IP 			string
+    Remote_IP 			string 
+    Trunc_IP			int
     Order_elevator_ID   int
     Order_type          string
     State_matrix	[][]int
